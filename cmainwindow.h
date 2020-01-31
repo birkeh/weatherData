@@ -56,5 +56,9 @@ protected:
 
 private slots:
 	void							onGo();
+	void							onCopy();
+	void							onShowTemperature(int state);
+	void							onShowPressure(int state);
+	void							onShowHumidity(int state);
 };
 #endif // CMAINWINDOW_H

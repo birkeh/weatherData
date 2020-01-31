@@ -9,7 +9,12 @@
 
 #include <QCloseEvent>
 
+#include <QClipboard>
+
 #include <QDebug>
+
+
+#define SEPARATOR	"\t"
 
 
 cMainWindow::cMainWindow(cSplashScreen* lpSplashScreen, QWidget *parent) :
@@ -39,6 +44,10 @@ cMainWindow::cMainWindow(cSplashScreen* lpSplashScreen, QWidget *parent) :
 	m_lpChart->addAxis(m_lpAxisYTemperature, Qt::AlignLeft);
 	m_lpSeriesTemperature->attachAxis(m_lpAxisYTemperature);
 	m_lpSeriesTemperature->attachAxis(m_lpAxisX);
+	m_lpSeriesTemperature->setName("Temperature");
+	m_lpSeriesTemperature->setPointLabelsFormat("@yPoint");
+	m_lpSeriesTemperature->setPointLabelsVisible(true);
+	m_lpSeriesTemperature->setColor(Qt::blue);
 
 	m_lpChart->addSeries(m_lpSeriesPressure);
 	m_lpAxisYPressure = new QValueAxis;
@@ -47,6 +56,10 @@ cMainWindow::cMainWindow(cSplashScreen* lpSplashScreen, QWidget *parent) :
 	m_lpChart->addAxis(m_lpAxisYPressure, Qt::AlignLeft);
 	m_lpSeriesPressure->attachAxis(m_lpAxisYPressure);
 	m_lpSeriesPressure->attachAxis(m_lpAxisX);
+	m_lpSeriesPressure->setName("Pressure");
+	m_lpSeriesPressure->setPointLabelsFormat("@yPoint");
+	m_lpSeriesPressure->setPointLabelsVisible(true);
+	m_lpSeriesPressure->setColor(Qt::red);
 
 	m_lpChart->addSeries(m_lpSeriesHumidity);
 	m_lpAxisYHumidity = new QValueAxis;
@@ -55,6 +68,10 @@ cMainWindow::cMainWindow(cSplashScreen* lpSplashScreen, QWidget *parent) :
 	m_lpChart->addAxis(m_lpAxisYHumidity, Qt::AlignLeft);
 	m_lpSeriesHumidity->attachAxis(m_lpAxisYHumidity);
 	m_lpSeriesHumidity->attachAxis(m_lpAxisX);
+	m_lpSeriesHumidity->setName("Humidity");
+	m_lpSeriesHumidity->setPointLabelsFormat("@yPoint");
+	m_lpSeriesHumidity->setPointLabelsVisible(true);
+	m_lpSeriesHumidity->setColor(Qt::gray);
 
 	m_lpChart->legend()->show();
 	m_lpChart->setTitle("Weather");
@@ -63,48 +80,9 @@ cMainWindow::cMainWindow(cSplashScreen* lpSplashScreen, QWidget *parent) :
 	ui->m_lpChart->setRenderHint(QPainter::Antialiasing);
 
 
-//	cMeteoStat		meteoStat("Q1H5Feca");
-//	cMeteoDataList	list		= meteoStat.getHistoricalData(QDate(2020, 1, 16), QDate(2020, 1, 16), 11035);
-//	QClipboard*		clipboard	= QGuiApplication::clipboard();
-//	QString			text		= "";
-
-//	for(int x = 0;x < list.count();x++)
-//	{
-//		cMeteoData*	lpData	= list[x];
-
-//		text.append(lpData->dateTime().toString("yyyy-MM-dd hh:mm:ss"));
-
-//		text.append("\t");
-//		text.append(lpData->dateTimeLocal().toString("yyyy-MM-dd hh:mm:ss"));
-
-//		text.append("\t");
-//		text.append(QString::number(lpData->temperature()));
-
-//		text.append("\t");
-//		text.append(QString::number(lpData->dewpoint()));
-
-//		text.append("\t");
-//		text.append(QString::number(lpData->humidity()));
-
-//		text.append("\t");
-//		text.append(QString::number(lpData->windspeed()));
-
-//		text.append("\t");
-//		text.append(QString::number(lpData->peakgust()));
-
-//		text.append("\t");
-//		text.append(QString::number(lpData->winddirection()));
-
-//		text.append("\t");
-//		text.append(QString::number(lpData->pressure()));
-
-//		text.append("\t");
-//		text.append(QString::number(lpData->condition()));
-
-//		text.append("\n");
-//	}
-
-//	clipboard->setText(text);
+	onShowTemperature(0);
+	onShowPressure(0);
+	onShowHumidity(0);
 }
 
 cMainWindow::~cMainWindow()
@@ -124,6 +102,10 @@ void cMainWindow::closeEvent(QCloseEvent *event)
 	else
 		settings.setValue("main/maximized", QVariant::fromValue(false));
 
+	settings.setValue("show/temperature", QVariant::fromValue(ui->m_lpShowTemperature->isChecked()));
+	settings.setValue("show/pressure", QVariant::fromValue(ui->m_lpShowPressure->isChecked()));
+	settings.setValue("show/humidity", QVariant::fromValue(ui->m_lpShowHumidity->isChecked()));
+
 	event->accept();
 }
 
@@ -132,9 +114,6 @@ void cMainWindow::initUI()
 	QSettings	settings;
 
 	ui->setupUi(this);
-
-//	m_lpFileListModel	= new QStandardItemModel;
-//	ui->m_lpFileList->setModel(m_lpFileListModel);
 
 	if(!settings.value("main/maximized").toBool())
 	{
@@ -149,9 +128,6 @@ void cMainWindow::initUI()
 			move(iX, iY);
 	}
 
-//	QStringList			headerLabels	= QStringList() << tr("icon") << tr("path") << tr("file") << tr("size") << tr("date") << tr("width") << tr("height") << ("");
-//	m_lpFileListModel->setHorizontalHeaderLabels(headerLabels);
-
 	ui->m_lpDateFrom->setDate(QDate::currentDate().addDays(-1));
 	ui->m_lpDateTo->setDate(QDate::currentDate().addDays(-1));
 
@@ -160,6 +136,10 @@ void cMainWindow::initUI()
 
 	QStringList	headerLabels	= QStringList() << tr("Date") << tr("Temperature") << tr("Pressure") << tr("Humidity") << tr("Windspeed") << tr("Winddirection");
 	m_lpListModel->setHorizontalHeaderLabels(headerLabels);
+
+	ui->m_lpShowTemperature->setChecked(settings.value("show/temperature", QVariant::fromValue(true)).toBool());
+	ui->m_lpShowPressure->setChecked(settings.value("show/pressure", QVariant::fromValue(true)).toBool());
+	ui->m_lpShowHumidity->setChecked(settings.value("show/humidity", QVariant::fromValue(true)).toBool());
 }
 
 void cMainWindow::createActions()
@@ -172,7 +152,12 @@ void cMainWindow::createActions()
 //	connect(ui->m_lpFileList,		&cTreeView::deleteEntrys,	this,		&cMainWindow::onDeleteEntrys);
 //	connect(ui->m_lpThumbnailSize,	&QSlider::valueChanged,		this,		&cMainWindow::onThumbnailSize);
 
-	connect(ui->m_lpGo,				&QPushButton::clicked,		this,		&cMainWindow::onGo);
+	connect(ui->m_lpGo,					&QPushButton::clicked,		this,		&cMainWindow::onGo);
+	connect(ui->m_lpCopy,				&QPushButton::clicked,		this,		&cMainWindow::onCopy);
+
+	connect(ui->m_lpShowTemperature,	&QCheckBox::stateChanged,	this,		&cMainWindow::onShowTemperature);
+	connect(ui->m_lpShowPressure,		&QCheckBox::stateChanged,	this,		&cMainWindow::onShowPressure);
+	connect(ui->m_lpShowHumidity,		&QCheckBox::stateChanged,	this,		&cMainWindow::onShowHumidity);
 }
 
 void cMainWindow::createContextActions()
@@ -237,8 +222,6 @@ void cMainWindow::onGo()
 	qreal			minHumidity		= list[0]->humidity();
 	qreal			maxHumidity		= list[0]->humidity();
 
-	QStandardItem*	itemList[6];
-
 	for(int x = 0;x < list.count();x++)
 	{
 		cMeteoData*				lpData		= list[x];
@@ -255,6 +238,13 @@ void cMainWindow::onGo()
 		itemList[2]->setTextAlignment(Qt::AlignRight);
 		itemList[3]->setTextAlignment(Qt::AlignRight);
 		itemList[4]->setTextAlignment(Qt::AlignRight);
+
+		itemList[0]->setData(QVariant::fromValue(lpData->dateTime()), Qt::UserRole);
+		itemList[1]->setData(QVariant::fromValue(lpData->temperature()), Qt::UserRole);
+		itemList[2]->setData(QVariant::fromValue(lpData->pressure()), Qt::UserRole);
+		itemList[3]->setData(QVariant::fromValue(lpData->humidity()), Qt::UserRole);
+		itemList[4]->setData(QVariant::fromValue(lpData->windspeed()), Qt::UserRole);
+		itemList[5]->setData(QVariant::fromValue(lpData->winddirection()), Qt::UserRole);
 
 		m_lpListModel->appendRow(itemList);
 
@@ -287,10 +277,14 @@ void cMainWindow::onGo()
 			maxHumidity		= lpData->humidity();
 	}
 
+	qreal	diffTemperature	= maxTemperature-minTemperature;
+	qreal	diffPRessure	= maxPressure-minPressure;
+	qreal	diffHumidity	= maxHumidity-minHumidity;
+
 	m_lpAxisX->setRange(minDate, maxDate);
-	m_lpAxisYTemperature->setRange(minTemperature, maxTemperature);
-	m_lpAxisYPressure->setRange(minPressure, maxPressure);
-	m_lpAxisYHumidity->setRange(minHumidity, maxHumidity);
+	m_lpAxisYTemperature->setRange(minTemperature-diffTemperature/10, maxTemperature+diffTemperature/10);
+	m_lpAxisYPressure->setRange(minPressure-diffPRessure/10, maxPressure+diffPRessure/10);
+	m_lpAxisYHumidity->setRange(minHumidity-diffHumidity/10, maxHumidity+diffHumidity/10);
 
 	ui->m_lpList->resizeColumnToContents(0);
 	ui->m_lpList->resizeColumnToContents(1);
@@ -298,4 +292,59 @@ void cMainWindow::onGo()
 	ui->m_lpList->resizeColumnToContents(3);
 	ui->m_lpList->resizeColumnToContents(4);
 	ui->m_lpList->resizeColumnToContents(5);
+}
+
+void cMainWindow::onCopy()
+{
+	QClipboard*		clipboard	= QGuiApplication::clipboard();
+	QString			text		= tr("Date") + tr(SEPARATOR) + tr("Temperature") + tr(SEPARATOR) + tr("Pressure") + tr(SEPARATOR) + tr("Humidity") + tr(SEPARATOR) + tr("Windspeed") + tr(SEPARATOR) + tr("Winddirection\n");
+
+	for(int x = 0;x < m_lpListModel->rowCount();x++)
+	{
+		QStandardItem*	lpDateTime		= m_lpListModel->item(x, 0);
+		QStandardItem*	lpTemperature	= m_lpListModel->item(x, 1);
+		QStandardItem*	lpPressure		= m_lpListModel->item(x, 2);
+		QStandardItem*	lpHumidity		= m_lpListModel->item(x, 3);
+		QStandardItem*	lpWindspeed		= m_lpListModel->item(x, 4);
+		QStandardItem*	lpWinddirection	= m_lpListModel->item(x, 5);
+
+		text.append(lpDateTime->data(Qt::UserRole).toDateTime().toString("yyyy-MM-dd hh:mm:ss"));
+
+		text.append(SEPARATOR);
+		text.append(QString::number(lpTemperature->data(Qt::UserRole).toDouble()).replace(".", ","));
+
+		text.append(SEPARATOR);
+		text.append(QString::number(lpPressure->data(Qt::UserRole).toDouble()).replace(".", ","));
+
+		text.append(SEPARATOR);
+		text.append(QString::number(lpHumidity->data(Qt::UserRole).toInt()));
+
+		text.append(SEPARATOR);
+		text.append(QString::number(lpWindspeed->data(Qt::UserRole).toDouble()).replace(".", ","));
+
+		text.append(SEPARATOR);
+		text.append(QString::number(lpWinddirection->data(Qt::UserRole).toInt()));
+
+		text.append("\n");
+	}
+
+	clipboard->setText(text);
+}
+
+void cMainWindow::onShowTemperature(int /*state*/)
+{
+	m_lpSeriesTemperature->setVisible(ui->m_lpShowTemperature->isChecked());
+	m_lpAxisYTemperature->setVisible(ui->m_lpShowTemperature->isChecked());
+}
+
+void cMainWindow::onShowPressure(int /*state*/)
+{
+	m_lpSeriesPressure->setVisible(ui->m_lpShowPressure->isChecked());
+	m_lpAxisYPressure->setVisible(ui->m_lpShowPressure->isChecked());
+}
+
+void cMainWindow::onShowHumidity(int /*state*/)
+{
+	m_lpSeriesHumidity->setVisible(ui->m_lpShowHumidity->isChecked());
+	m_lpAxisYHumidity->setVisible(ui->m_lpShowHumidity->isChecked());
 }

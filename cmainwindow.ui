@@ -57,6 +57,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="m_lpCopy">
+          <property name="text">
+           <string>copy</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="horizontalSpacer">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -68,6 +75,27 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="m_lpShowTemperature">
+          <property name="text">
+           <string>Show Temperature</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="m_lpShowPressure">
+          <property name="text">
+           <string>Show Pressure</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="m_lpShowHumidity">
+          <property name="text">
+           <string>Show Humidity</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
