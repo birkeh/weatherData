@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="sun">../../../../../dev/Qt/Examples/Qt-5.14.0/charts/datetimeaxis/sun_spots.txt</file>
+    </qresource>
+</RCC>

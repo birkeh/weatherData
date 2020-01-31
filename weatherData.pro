@@ -1,14 +1,42 @@
-QT       += core gui network sql
+VERSION = 0.0.1.0
+QMAKE_TARGET_COMPANY = WIN-DESIGN
+QMAKE_TARGET_PRODUCT = weatherData
+QMAKE_TARGET_DESCRIPTION = weatherData
+QMAKE_TARGET_COPYRIGHT = (c) 2020 WIN-DESIGN
+
+QT       += core gui network sql charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++11
+
+win32-msvc* {
+    contains(QT_ARCH, i386) {
+        message("msvc 32-bit")
+    } else {
+        message("msvc 64-bit")
+    }
+}
+
+win32-g++ {
+    message("mingw")
+#    INCLUDEPATH += C:\dev\3rdParty\exiv2\include C:\dev\3rdParty\libraw C:\dev\3rdParty\libjpeg\include C:\dev\3rdParty\opencv\include dng
+#    LIBS += -LC:\dev\3rdParty\exiv2\lib -lexiv2.dll -LC:\dev\3rdParty\libraw\lib -LC:\dev\3rdParty\opencv\x64\mingw\lib -lraw -lws2_32 -lz -lopencv_core412.dll -lopencv_imgproc412.dll
+}
+
+unix {
+    message("*nix")
+#    LIBS += -lraw -lexiv2
+}
+
+#QMAKE_CXXFLAGS += -DLIBRAW_NODLL -DLIBRAW_NOTHREADS
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 # You can also make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -18,13 +46,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     cmeteodata.cpp \
     cmeteostat.cpp \
+    common.cpp \
+    csplashscreen.cpp \
     main.cpp \
     cmainwindow.cpp
 
 HEADERS += \
     cmainwindow.h \
     cmeteodata.h \
-    cmeteostat.h
+    cmeteostat.h \
+    common.h \
+    csplashscreen.h
 
 FORMS += \
     cmainwindow.ui
@@ -36,3 +68,6 @@ TRANSLATIONS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    weatherdata.qrc
