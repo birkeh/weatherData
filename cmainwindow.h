@@ -57,6 +57,7 @@ protected:
 private slots:
 	void							onGo();
 	void							onCopy();
+	void							onCopyRow();
 	void							onShowTemperature(int state);
 	void							onShowPressure(int state);
 	void							onShowHumidity(int state);

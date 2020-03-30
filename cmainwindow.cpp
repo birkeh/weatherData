@@ -11,6 +11,8 @@
 
 #include <QClipboard>
 
+#include <QShortcut>
+
 #include <QDebug>
 
 
@@ -158,6 +160,9 @@ void cMainWindow::createActions()
 	connect(ui->m_lpShowTemperature,	&QCheckBox::stateChanged,	this,		&cMainWindow::onShowTemperature);
 	connect(ui->m_lpShowPressure,		&QCheckBox::stateChanged,	this,		&cMainWindow::onShowPressure);
 	connect(ui->m_lpShowHumidity,		&QCheckBox::stateChanged,	this,		&cMainWindow::onShowHumidity);
+
+	QShortcut * shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this, SLOT(onCopyRow()));
+	shortcut->setAutoRepeat(false);
 }
 
 void cMainWindow::createContextActions()
@@ -227,7 +232,7 @@ void cMainWindow::onGo()
 		cMeteoData*				lpData		= list[x];
 		QList<QStandardItem*>	itemList;
 
-		itemList << new QStandardItem(lpData->dateTime().toString("yyyy-MM-ss hh:mm"))
+		itemList << new QStandardItem(lpData->dateTime().toString("yyyy-MM-dd hh:mm"))
 				 << new QStandardItem(QString::number(lpData->temperature()) + " °C")
 				 << new QStandardItem(QString::number(lpData->pressure()) + " hPa")
 				 << new QStandardItem(QString::number(lpData->humidity()) + " %")
@@ -327,6 +332,42 @@ void cMainWindow::onCopy()
 
 		text.append("\n");
 	}
+
+	clipboard->setText(text);
+}
+
+void cMainWindow::onCopyRow()
+{
+	QModelIndex	index	= ui->m_lpList->currentIndex();
+	if(!index.isValid())
+		return;
+
+	QClipboard*		clipboard	= QGuiApplication::clipboard();
+	QString			text		= "";
+
+//	QStandardItem*	lpDateTime		= m_lpListModel->item(index.row(), 0);
+	QStandardItem*	lpTemperature	= m_lpListModel->item(index.row(), 1);
+//	QStandardItem*	lpPressure		= m_lpListModel->item(index.row(), 2);
+	QStandardItem*	lpHumidity		= m_lpListModel->item(index.row(), 3);
+	QStandardItem*	lpWindspeed		= m_lpListModel->item(index.row(), 4);
+//	QStandardItem*	lpWinddirection	= m_lpListModel->item(index.row(), 5);
+
+//	text.append(lpDateTime->data(Qt::UserRole).toDateTime().toString("yyyy-MM-dd hh:mm:ss"));
+
+//	text.append(SEPARATOR);
+	text.append(QString::number(lpTemperature->data(Qt::UserRole).toDouble()).replace(".", ","));
+
+//	text.append(SEPARATOR);
+//	text.append(QString::number(lpPressure->data(Qt::UserRole).toDouble()).replace(".", ","));
+
+	text.append(SEPARATOR);
+	text.append(QString::number(lpHumidity->data(Qt::UserRole).toInt()));
+
+	text.append(SEPARATOR);
+	text.append(QString::number(lpWindspeed->data(Qt::UserRole).toDouble()).replace(".", ","));
+
+//	text.append(SEPARATOR);
+//	text.append(QString::number(lpWinddirection->data(Qt::UserRole).toInt()));
 
 	clipboard->setText(text);
 }
